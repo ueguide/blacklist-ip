@@ -4,6 +4,7 @@ namespace TheLHC\BlacklistIp;
 
 use Illuminate\Support\ServiceProvider;
 use TheLHC\BlacklistIp\Console\MigrationCommand;
+use TheLHC\BlacklistIp\Console\UpdateCloudIps;
 
 class BlacklistIpServiceProvider extends ServiceProvider
 {
@@ -14,14 +15,22 @@ class BlacklistIpServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /*
         $this->publishes([
             __DIR__ . '/../config/blacklist_ip.php' => config_path('blacklist_ip.php')
         ], 'config');
-        */
-       
+        
+        $this->app->singleton(
+            'blacklist_ip.update_cloud_ips',
+            function($app) {
+                return new UpdateCloudIps(
+                    $app->make('config')->get('blacklist_ip')
+                );
+            }
+        );
+            
         $this->commands([
-            MigrationCommand::class
+            MigrationCommand::class,
+            'blacklist_ip.update_cloud_ips'
         ]);
     }
 
@@ -32,9 +41,7 @@ class BlacklistIpServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        /*
         $this->mergeConfigFrom(__DIR__ . '/../config/blacklist_ip.php', 'blacklist_ip');
-        */
     }
 
     /**
