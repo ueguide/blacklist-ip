@@ -103,4 +103,22 @@ class Blacklist
         return true;
     }
     
+    public function shouldIgnoreIp($ip)
+    {
+        return ($this->isBlacklistIp($ip) or $this->isCloudIp($ip));
+    }
+    
+    /**
+     * Check if client is human by User-Agent
+     * @param  String  $agent
+     * @return boolean
+     */
+    public function isHuman($agent)
+    {
+        return (
+            !preg_match('#(bot|google|crawler|spider|prerender|facebookexternalhit)#i', $agent) and
+            !is_null($agent)
+        );
+    }
+    
 }

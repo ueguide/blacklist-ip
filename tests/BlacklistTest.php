@@ -44,4 +44,10 @@ class BlacklistTest extends TestCase
         $blacklist = \DB::table('blacklist_ips')->where('ip', '104.184.195.227')->first();
         $this->assertTrue(!$blacklist);
     }
+    
+    public function testShouldIgnoreIp()
+    {
+        Blacklist::banIp('104.184.195.227');
+        $this->assertTrue(Blacklist::shouldIgnoreIp('104.184.195.227'));
+    }
 }
