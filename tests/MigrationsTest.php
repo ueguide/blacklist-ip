@@ -8,5 +8,8 @@ class MigrationsTest extends TestCase
     {
         $count = \DB::table('cloudips')->count();
         $this->assertEquals(0, $count);
+        
+        $count = \DB::table('blacklist_ips')->count();
+        $this->assertEquals(0, $count);
     }
 }

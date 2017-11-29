@@ -4,6 +4,7 @@ namespace TheLHC\BlacklistIp;
 
 use Symfony\Component\HttpFoundation\IpUtils;
 use Cache;
+use Carbon\Carbon;
 
 class Blacklist 
 {
@@ -47,6 +48,44 @@ class Blacklist
         }
 
         return false;
+    }
+    
+    public function banIp($ip)
+    {
+        if (is_null($ip)) return false;
+        $timestamp = new Carbon;
+        $attrs = [
+            'ip'         => $ip,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp
+        ];
+        $record = \DB::table($this->config['blacklist_table'])
+                    ->where('ip', $ip)
+                    ->first();
+        if ($record) {
+            unset($attrs['created_at']);
+            \DB::table($this->config['blacklist_table'])
+                ->where('ip', $ip)
+                ->update($attrs);
+        } else {
+            \DB::table($this->config['blacklist_table'])->insert($attrs);
+        }
+        
+        return true;
+    }
+    
+    public function isBlacklistIp($ip)
+    {
+        // get ip subnet
+        $ip_net = explode('.', $ip);
+        array_pop($ip_net);
+        $ipSubnet = implode('.', $ip_net).'.';
+        // find a strict matching IP or subnet
+        $blacklisted = \DB::table($this->config['blacklist_table'])
+                            ->whereRaw("ip = ? OR ip = ?", [$ip, $ipSubnet])
+                            ->first();
+        
+        return !!$blacklisted;
     }
     
 }
