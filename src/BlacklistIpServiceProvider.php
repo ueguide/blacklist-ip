@@ -42,6 +42,10 @@ class BlacklistIpServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/blacklist_ip.php', 'blacklist_ip');
+        
+        $this->app->singleton('blacklist', function ($app) {
+            return new Blacklist($app['config']->get('blacklist_ip'));
+        });
     }
 
     /**

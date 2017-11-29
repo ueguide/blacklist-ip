@@ -59,5 +59,12 @@ class TestCase extends BaseTestCase
             BlacklistIpServiceProvider::class
         ];
     }
+    
+    protected function getPackageAliases($app)
+    {
+        return [
+            'Blacklist' => 'TheLHC\BlacklistIp\Facades\Blacklist'
+        ];
+    }
 
 }
