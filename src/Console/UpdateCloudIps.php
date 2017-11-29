@@ -5,6 +5,7 @@ namespace TheLHC\BlacklistIp\Console;
 use Illuminate\Console\Command;
 use GuzzleHttp\Client;
 use Carbon\Carbon;
+use DB;
 
 class UpdateCloudIps extends Command
 {
@@ -33,7 +34,7 @@ class UpdateCloudIps extends Command
 
         /* delete rows that haven't been updated in at least 3 days */
         $threeDays = date('Y-m-d H:i:s', time() - 3 * 24 * 60 * 60);
-        \DB::table($this->config['cloudips_table'])
+        DB::table($this->config['cloudips_table'])
             ->where('updated_at', '<=', $threeDays)
             ->delete();
     }
@@ -58,16 +59,16 @@ class UpdateCloudIps extends Command
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp
             ];
-            $record = \DB::table($this->config['cloudips_table'])
+            $record = DB::table($this->config['cloudips_table'])
                             ->where('cidr_ip', $obj->ip_prefix)
                             ->first();
             if ($record) {
                 unset($attrs['created_at']);
-                \DB::table($this->config['cloudips_table'])
+                DB::table($this->config['cloudips_table'])
                                 ->where('cidr_ip', $obj->ip_prefix)
                                 ->update($attrs);
             } else {
-                \DB::table($this->config['cloudips_table'])->insert($attrs);
+                DB::table($this->config['cloudips_table'])->insert($attrs);
             }
         }
     }
@@ -100,16 +101,16 @@ class UpdateCloudIps extends Command
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp
                 ];
-                $record = \DB::table($this->config['cloudips_table'])
+                $record = DB::table($this->config['cloudips_table'])
                                 ->where('cidr_ip', $range['Subnet'])
                                 ->first();
                 if ($record) {
                     unset($attrs['created_at']);
-                    \DB::table($this->config['cloudips_table'])
+                    DB::table($this->config['cloudips_table'])
                                     ->where('cidr_ip', $range['Subnet'])
                                     ->update($attrs);
                 } else {
-                    \DB::table($this->config['cloudips_table'])->insert($attrs);
+                    DB::table($this->config['cloudips_table'])->insert($attrs);
                 }
             }
         }

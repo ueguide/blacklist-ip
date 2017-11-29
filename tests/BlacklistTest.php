@@ -36,4 +36,12 @@ class BlacklistTest extends TestCase
         Blacklist::banIp('104.184.195.227');
         $this->assertTrue(Blacklist::isBlacklistIp('104.184.195.227'));
     }
+    
+    public function testUnBanIp()
+    {
+        Blacklist::banIp('104.184.195.227');
+        $this->assertTrue(Blacklist::unBanIp('104.184.195.227'));
+        $blacklist = \DB::table('blacklist_ips')->where('ip', '104.184.195.227')->first();
+        $this->assertTrue(!$blacklist);
+    }
 }
