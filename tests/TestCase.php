@@ -32,7 +32,6 @@ class TestCase extends BaseTestCase
         $this->artisan('migrate', [
             '--database' => 'testbench'
         ]);
-
     }
 
     /**

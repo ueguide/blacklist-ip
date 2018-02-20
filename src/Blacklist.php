@@ -5,7 +5,7 @@ namespace TheLHC\BlacklistIp;
 use Symfony\Component\HttpFoundation\IpUtils;
 use TheLHC\BlacklistIp\Events\IpUnBanned;
 use TheLHC\BlacklistIp\Events\IpBanned;
-use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\Event;
 use Carbon\Carbon;
 use Cache;
 use DB;
@@ -87,7 +87,7 @@ class Blacklist
             DB::table($this->config['blacklist_table'])->insert($attrs);
         }
 
-        (new Dispatcher)->dispatch(new IpUnBanned($ip));
+        Event::dispatch(new IpBanned($ip));
 
         return true;
     }
@@ -129,7 +129,7 @@ class Blacklist
                 ->delete();
         }
 
-        (new Dispatcher)->dispatch(new IpUnBanned($ip));
+        Event::dispatch(new IpUnBanned($ip));
 
         return true;
     }

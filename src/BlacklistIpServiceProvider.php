@@ -43,10 +43,12 @@ class BlacklistIpServiceProvider extends ServiceProvider
             }
         );
 
+        /*
         $this->commands([
             MigrationCommand::class,
             'blacklist_ip.update_cloud_ips'
         ]);
+        */
     }
 
     /**
