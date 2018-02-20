@@ -19,6 +19,21 @@ class BlacklistIpServiceProvider extends ServiceProvider
             __DIR__ . '/../config/blacklist_ip.php' => config_path('blacklist_ip.php')
         ], 'config');
 
+        if (! class_exists('CreateBlacklistIpsTable')) {
+            $timestamp = date('Y_m_d_His', time());
+            $this->publishes([
+                __DIR__.'/../migrations/create_blacklist_ips_table.php' => database_path("/migrations/{$timestamp}_create_blacklist_ips_table.php"),
+            ], 'migrations');
+        }
+
+        if (! class_exists('CreateCloudipsTable')) {
+            $timestamp = date('Y_m_d_His', time());
+            $this->publishes([
+                __DIR__.'/../migrations/create_cloudips_table.php' => database_path("/migrations/{$timestamp}_create_cloudips_table.php"),
+            ], 'migrations');
+        }
+
+
         $this->app->singleton(
             'blacklist_ip.update_cloud_ips',
             function($app) {

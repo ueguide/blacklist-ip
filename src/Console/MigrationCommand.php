@@ -48,13 +48,14 @@ class MigrationCommand extends Command
      */
     protected function createMigrations()
     {
-        foreach(glob(__DIR__.'/../migrations/*.php') as $file) {
+        foreach(glob(__DIR__.'/../../migrations/*.php') as $file) {
             $pieces = explode('/', $file);
             $filename = array_pop($pieces);
             $migrationName = date('Y_m_d_His').'_'.$filename;
             $migration = database_path('migrations').'/'.$migrationName;
             if (!file_exists($migration) && $fs = fopen($migration, 'x')) {
-                fwrite($fs, file_get_contents($file));
+                $buffer = file_get_contents($file);
+                fwrite($fs, $buffer);
                 fclose($fs);
                 $this->info("Successfully created {$migrationName}!");
             }
