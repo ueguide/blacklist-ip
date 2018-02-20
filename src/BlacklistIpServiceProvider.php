@@ -33,7 +33,6 @@ class BlacklistIpServiceProvider extends ServiceProvider
             ], 'migrations');
         }
 
-
         $this->app->singleton(
             'blacklist_ip.update_cloud_ips',
             function($app) {
@@ -43,12 +42,9 @@ class BlacklistIpServiceProvider extends ServiceProvider
             }
         );
 
-        /*
         $this->commands([
-            MigrationCommand::class,
             'blacklist_ip.update_cloud_ips'
         ]);
-        */
     }
 
     /**
