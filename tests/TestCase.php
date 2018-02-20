@@ -23,12 +23,15 @@ class TestCase extends BaseTestCase
         foreach(glob(database_path('migrations').'/*.php') as $mig) {
             unlink($mig);
         }
-        $this->artisan('blacklist_ip:migration');
-        
-        $this->loadMigrationsFrom([
-            '--database' => 'testbench'
+
+        $this->artisan('vendor:publish', [
+            '--provider' => 'TheLHC\BlacklistIp\BlacklistIpServiceProvider',
+            '--tag' => 'migrations'
         ]);
 
+        $this->artisan('migrate', [
+            '--database' => 'testbench'
+        ]);
     }
 
     /**
@@ -59,7 +62,7 @@ class TestCase extends BaseTestCase
             BlacklistIpServiceProvider::class
         ];
     }
-    
+
     protected function getPackageAliases($app)
     {
         return [

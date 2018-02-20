@@ -3,11 +3,14 @@
 namespace TheLHC\BlacklistIp;
 
 use Symfony\Component\HttpFoundation\IpUtils;
+use TheLHC\BlacklistIp\Events\IpUnBanned;
+use TheLHC\BlacklistIp\Events\IpBanned;
+use Illuminate\Support\Facades\Event;
 use Carbon\Carbon;
 use Cache;
 use DB;
 
-class Blacklist 
+class Blacklist
 {
     protected $config;
 
@@ -15,17 +18,23 @@ class Blacklist
     {
         $this->config = $config;
     }
-    
+
+    /**
+     * Retrieve IPs grouped by a prefix
+     *
+     * @param string $prefix
+     * @return object
+     */
     public function cloudIpsByPrefix($prefix)
     {
         return DB::table($this->config['cloudips_table'])
                     ->where('cidr_ip', 'like', "{$prefix}.%")
                     ->get();
     }
-    
+
     /**
-     * Test IP against cloud IP database 
-     * 
+     * Test IP against cloud IP database
+     *
      * @param  String  $ip         ip address
      * @param  boolean $returnInfo if true, return matching CloudIp instance (contains meta data)
      * @return boolean             returns instances if $returnInfo = true
@@ -37,7 +46,7 @@ class Blacklist
         $cloudIps = Cache::remember("cloudip-{$prefix}", 60, function() use ($prefix) {
             return self::cloudIpsByPrefix($prefix);
         });
-        // check for match 
+        // check for match
         foreach ($cloudIps as $cloudIp) {
             if (IpUtils::checkIp($ip, $cloudIp->cidr_ip)) {
                 if ($returnInfo) {
@@ -50,7 +59,13 @@ class Blacklist
 
         return false;
     }
-    
+
+    /**
+     * Ban an IP
+     *
+     * @param string $ip
+     * @return boolean
+     */
     public function banIp($ip)
     {
         if (is_null($ip)) return false;
@@ -71,10 +86,18 @@ class Blacklist
         } else {
             DB::table($this->config['blacklist_table'])->insert($attrs);
         }
-        
+
+        Event::dispatch(new IpBanned($ip));
+
         return true;
     }
-    
+
+    /**
+     * Check if the IP is blacklisted
+     *
+     * @param string $ip
+     * @return boolean
+     */
     public function isBlacklistIp($ip)
     {
         // get ip subnet
@@ -85,10 +108,16 @@ class Blacklist
         $blacklisted = DB::table($this->config['blacklist_table'])
                             ->whereRaw("ip = ? OR ip = ?", [$ip, $ipSubnet])
                             ->first();
-        
+
         return !!$blacklisted;
     }
-    
+
+    /**
+     * Unban an IP
+     *
+     * @param string $ip
+     * @return boolean
+     */
     public function unBanIp($ip)
     {
         $record = DB::table($this->config['blacklist_table'])
@@ -99,15 +128,23 @@ class Blacklist
                 ->where('ip', $ip)
                 ->delete();
         }
-        
+
+        Event::dispatch(new IpUnBanned($ip));
+
         return true;
     }
-    
+
+    /**
+     * Check if the IP shoudld be ignored
+     *
+     * @param string $ip
+     * @return boolean
+     */
     public function shouldIgnoreIp($ip)
     {
         return ($this->isBlacklistIp($ip) or $this->isCloudIp($ip));
     }
-    
+
     /**
      * Check if client is human by User-Agent
      * @param  String  $agent
@@ -120,5 +157,5 @@ class Blacklist
             !is_null($agent)
         );
     }
-    
+
 }
