@@ -23,10 +23,10 @@ class TestCase extends BaseTestCase
         foreach(glob(database_path('migrations').'/*.php') as $mig) {
             unlink($mig);
         }
+
         $this->artisan('blacklist_ip:migration');
-        
         $this->loadMigrationsFrom([
-            '--database' => 'testbench'
+            '--database' => 'testbench',
         ]);
 
     }

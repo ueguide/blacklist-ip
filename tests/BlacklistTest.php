@@ -1,6 +1,9 @@
 <?php
 
+use TheLHC\BlacklistIp\Events\IpUnBanned;
+use TheLHC\BlacklistIp\Events\IpBanned;
 use TheLHC\BlacklistIp\Tests\TestCase;
+use Illuminate\Support\Facades\Event;
 
 class BlacklistTest extends TestCase
 {
@@ -26,8 +29,15 @@ class BlacklistTest extends TestCase
     
     public function testBanIp()
     {
-        $this->assertTrue(Blacklist::banIp('104.184.195.227'));
-        $blacklist = \DB::table('blacklist_ips')->where('ip', '104.184.195.227')->first();
+        Event::fake();
+
+        $ip = '104.184.195.227';
+
+        $this->assertTrue(Blacklist::banIp($ip));
+        Event::assertDispatched(IpBanned::class, function ($event) use ($ip) {
+            return $event->ip === $ip;
+        });
+        $blacklist = \DB::table('blacklist_ips')->where('ip', $ip)->first();
         $this->assertTrue(!!$blacklist);
     }
     
@@ -39,9 +49,16 @@ class BlacklistTest extends TestCase
     
     public function testUnBanIp()
     {
-        Blacklist::banIp('104.184.195.227');
-        $this->assertTrue(Blacklist::unBanIp('104.184.195.227'));
-        $blacklist = \DB::table('blacklist_ips')->where('ip', '104.184.195.227')->first();
+        Event::fake();
+
+        $ip = '104.184.195.227';
+
+        Blacklist::banIp($ip);
+        $this->assertTrue(Blacklist::unBanIp($ip));
+        Event::assertDispatched(IpUnBanned::class, function ($e) use ($ip) {
+            return $e->ip === $ip;
+        });
+        $blacklist = \DB::table('blacklist_ips')->where('ip', $ip)->first();
         $this->assertTrue(!$blacklist);
     }
     
