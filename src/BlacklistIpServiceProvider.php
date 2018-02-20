@@ -18,7 +18,7 @@ class BlacklistIpServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/blacklist_ip.php' => config_path('blacklist_ip.php')
         ], 'config');
-        
+
         $this->app->singleton(
             'blacklist_ip.update_cloud_ips',
             function($app) {
@@ -27,7 +27,7 @@ class BlacklistIpServiceProvider extends ServiceProvider
                 );
             }
         );
-            
+
         $this->commands([
             MigrationCommand::class,
             'blacklist_ip.update_cloud_ips'
@@ -42,7 +42,7 @@ class BlacklistIpServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/blacklist_ip.php', 'blacklist_ip');
-        
+
         $this->app->singleton('blacklist', function ($app) {
             return new Blacklist($app['config']->get('blacklist_ip'));
         });
