@@ -33,15 +33,6 @@ class BlacklistIpServiceProvider extends ServiceProvider
             ], 'migrations');
         }
 
-        $this->app->singleton(
-            'blacklist_ip.update_cloud_ips',
-            function($app) {
-                return new UpdateCloudIps(
-                    $app->make('config')->get('blacklist_ip')
-                );
-            }
-        );
-
         $this->commands([
             'blacklist_ip.update_cloud_ips'
         ]);
@@ -58,6 +49,10 @@ class BlacklistIpServiceProvider extends ServiceProvider
 
         $this->app->singleton('blacklist', function ($app) {
             return new Blacklist($app['config']->get('blacklist_ip'));
+        });
+
+        $this->app->singleton('blacklist_ip.update_cloud_ips', function($app) {
+            return new UpdateCloudIps($app['config']->get('blacklist_ip'));
         });
     }
 
