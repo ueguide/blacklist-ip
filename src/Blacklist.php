@@ -7,8 +7,6 @@ use TheLHC\BlacklistIp\Events\IpUnBanned;
 use TheLHC\BlacklistIp\Events\IpBanned;
 use Illuminate\Support\Facades\Event;
 use Carbon\Carbon;
-use Cache;
-use DB;
 
 class Blacklist
 {
@@ -27,7 +25,7 @@ class Blacklist
      */
     public function cloudIpsByPrefix($prefix)
     {
-        return DB::table($this->config['cloudips_table'])
+        return app('db')->table($this->config['cloudips_table'])
                     ->where('cidr_ip', 'like', "{$prefix}.%")
                     ->get();
     }
@@ -43,7 +41,7 @@ class Blacklist
     {
         list($prefix) = explode('.', $ip);
         // if ip=123.4.5.6, only test ips matching 123.%
-        $cloudIps = Cache::remember("cloudip-{$prefix}", 60, function() use ($prefix) {
+        $cloudIps = app('cache')->remember("cloudip-{$prefix}", 60, function() use ($prefix) {
             return self::cloudIpsByPrefix($prefix);
         });
         // check for match
@@ -75,16 +73,16 @@ class Blacklist
             'created_at' => $timestamp,
             'updated_at' => $timestamp
         ];
-        $record = DB::table($this->config['blacklist_table'])
+        $record = app('db')->table($this->config['blacklist_table'])
                     ->where('ip', $ip)
                     ->first();
         if ($record) {
             unset($attrs['created_at']);
-            DB::table($this->config['blacklist_table'])
+            app('db')->table($this->config['blacklist_table'])
                 ->where('ip', $ip)
                 ->update($attrs);
         } else {
-            DB::table($this->config['blacklist_table'])->insert($attrs);
+            app('db')->table($this->config['blacklist_table'])->insert($attrs);
         }
 
         Event::dispatch(new IpBanned($ip));
@@ -105,7 +103,7 @@ class Blacklist
         array_pop($ip_net);
         $ipSubnet = implode('.', $ip_net).'.';
         // find a strict matching IP or subnet
-        $blacklisted = DB::table($this->config['blacklist_table'])
+        $blacklisted = app('db')->table($this->config['blacklist_table'])
                             ->whereRaw("ip = ? OR ip = ?", [$ip, $ipSubnet])
                             ->first();
 
@@ -120,11 +118,11 @@ class Blacklist
      */
     public function unBanIp($ip)
     {
-        $record = DB::table($this->config['blacklist_table'])
+        $record = app('db')->table($this->config['blacklist_table'])
                     ->where('ip', $ip)
                     ->first();
         if ($record) {
-            DB::table($this->config['blacklist_table'])
+            app('db')->table($this->config['blacklist_table'])
                 ->where('ip', $ip)
                 ->delete();
         }

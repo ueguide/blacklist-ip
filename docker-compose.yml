@@ -1,0 +1,21 @@
+version: '2'
+services:
+  app:
+    image: php
+    working_dir: "/app"
+    links:
+      - cache
+    environment:
+      - "REDIS_HOST=cache"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8181"
+  cache:
+    image: redis:3.0-alpine
+    ports:
+        - "63791:6379"
+  composer:
+    image: composer
+    volumes:
+      - .:/app
