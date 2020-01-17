@@ -1,7 +1,7 @@
 version: '2'
 services:
   app:
-    image: php
+    image: php:7-3
     working_dir: "/app"
     links:
       - cache
